@@ -313,12 +313,20 @@ module Devise
     end
 
     def get
-      ActiveSupport::Dependencies.constantize(@name)
+      # https://github.com/heartcombo/devise/pull/5397/files
+      # https://github.com/heartcombo/devise/pull/5357/files
+      # ActiveSupport::Dependencies.constantize(@name)
+      @name.constantize
     end
   end
 
   def self.ref(arg)
-    ActiveSupport::Dependencies.reference(arg)
+    # ActiveSupport::Dependencies.reference(arg)
+    # https://github.com/heartcombo/devise/pull/5397/files
+    # https://github.com/heartcombo/devise/pull/5357/files
+    if ActiveSupport::Dependencies.respond_to?(:reference)
+      ActiveSupport::Dependencies.reference(arg)
+    end
     Getter.new(arg)
   end
 
