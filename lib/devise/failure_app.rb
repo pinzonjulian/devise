@@ -71,7 +71,11 @@ module Devise
       end
 
       flash.now[:alert] = i18n_message(:invalid) if is_flashing_format?
-      self.response = recall_app(warden_options[:recall]).call(request.env)
+      # https://github.com/heartcombo/devise/pull/5340/files
+      # self.response = recall_app(warden_options[:recall]).call(request.env)
+      response_from_app = recall_app(warden_options[:recall]).call(request.env)
+      response_from_app[0] = recall_response_code(response_from_app[0])
+      self.response = response_from_app
     end
 
     def redirect
@@ -88,6 +92,10 @@ module Devise
     end
 
   protected
+    # https://github.com/heartcombo/devise/pull/5340/files
+    def recall_response_code(_original_response_code)
+      422
+    end
 
     def i18n_options(options)
       options
@@ -165,9 +173,10 @@ module Devise
         "/"
       end
     end
-
+    
+    # https://github.com/heartcombo/devise/pull/5340/files
     def skip_format?
-      %w(html */*).include? request_format.to_s
+      %w(html turbo_stream */*).include? request_format.to_s
     end
 
     # Choose whether we should respond in an HTTP authentication fashion,
